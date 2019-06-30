@@ -3,6 +3,7 @@
 
 local addonName, Addon = ...
 local class = select(2,UnitClass("player"))
+
 if class ~= Addon.Class then return end
 
 XiTimers = {}
@@ -32,12 +33,12 @@ XiTimers.barAnchors = baranchors
 local function FormatTime(frame, sec, format)
 	local seconds = ceil(sec)
 
- 	if format == "blizz" then
+	if format == "blizz" then
 		frame:SetFormattedText(SecondsToTimeAbbrev(sec))
-    elseif format == "sec" then
-        --seconds = ceil(sec-0.5)
-        if seconds == 0 then seconds = "" end
-        frame:SetFormattedText(tostring(seconds))
+	elseif format == "sec" then
+		--seconds = ceil(sec-0.5)
+		if seconds == 0 then seconds = "" end
+		frame:SetFormattedText(tostring(seconds))
 	else
 		if(seconds <= 0) then
 			frame:SetText("")
@@ -55,13 +56,13 @@ end
 
 
 local function SetButtonTime(fontstring, sec)
-    if sec > 600 then
-        FormatTime(fontstring, sec, "blizz")
-    elseif sec > 60 then
-        FormatTime(fontstring, sec)
-    else
-        FormatTime(fontstring, sec, "sec")
-    end
+	if sec > 600 then
+		FormatTime(fontstring, sec, "blizz")
+	elseif sec > 60 then
+		FormatTime(fontstring, sec)
+	else
+		FormatTime(fontstring, sec, "sec")
+	end
 end
 
 
@@ -74,29 +75,29 @@ local continuousTimers = {}
 local continuousUpdateDone = false
 
 function XiTimers.UpdateTimers(self,elapsed)
-    if XiTimers.updateInterval > 0 then nextUpdate = nextUpdate + elapsed end	
+	if XiTimers.updateInterval > 0 then nextUpdate = nextUpdate + elapsed end
 	if not continuousUpdateDone and nextUpdate >= XiTimers.updateInterval / 2 then
 		continuousUpdateDone = true
 		for i=1,#continuousTimers do
 			continuousTimers[i]:continuousUpdate()
 		end
 	end
-    if nextUpdate >= XiTimers.updateInterval then
-        nextUpdate = 0
+	if nextUpdate >= XiTimers.updateInterval then
+		nextUpdate = 0
 		continuousUpdateDone = false
 		local now = GetTime()
 		local timers = XiTimers.timers
-        for i=1,XiTimers.nrOfTimers do			
+		for i=1,XiTimers.nrOfTimers do
 			local timer = timers[i]
-            if timer.active then
+			if timer.active then
 				timer.buffSeen = false
-				if timer.timer > 0 then	
+				if timer.timer > 0 then
 					timer:Update(now)
 				elseif timer.smallTimer > 0 then
 					timer:UpdateSmall(now)
 				end
 			end
-        end     
+		end
 		if XiTimers.updateAuras then
 			XiTimers.updateAuras = false
 			local counter = 0
@@ -119,7 +120,7 @@ function XiTimers.UpdateTimers(self,elapsed)
 							timer.buffSeen = true
 						end
 					else
-						timer.reverseAlpha = false	
+						timer.reverseAlpha = false
 						if count and duration == 0 and expiration == 0 then
 							timer:Start(count, count, true, count)
 						else
@@ -135,7 +136,7 @@ function XiTimers.UpdateTimers(self,elapsed)
 				end
 			end
 		end
-    end
+	end
 end
 
 function XiTimers.SetProfile(newprofile)
@@ -150,7 +151,7 @@ local function DropSpell(self, kind, nr, item, id, ...)
 	if not profile.buttons then profile.buttons = {} end
 	if not profile.buttons[class] then profile.buttons[class] = {} end
 	if not profile.buttons[class][role] then profile.buttons[class][role] = {} end
-	
+
 	local oldspell = {}
 	if profile.buttons[class][role][self.timer.nr] then
 		oldspell.type = profile.buttons[class][role][self.timer.nr].type
@@ -159,8 +160,8 @@ local function DropSpell(self, kind, nr, item, id, ...)
 	if kind == "spell" then
 		profile.buttons[class][role][self.timer.nr] = {}
 		profile.buttons[class][role][self.timer.nr].type = "spell"
-		profile.buttons[class][role][self.timer.nr].id = id		
-	elseif kind == "item" then 
+		profile.buttons[class][role][self.timer.nr].id = id
+	elseif kind == "item" then
 		profile.buttons[class][role][self.timer.nr] = {}
 		profile.buttons[class][role][self.timer.nr].type = "item"
 		profile.buttons[class][role][self.timer.nr].id = nr
@@ -182,7 +183,7 @@ local function DropSpellClick(self)
 	if InCombatLockdown() then return end
 	local itemtype, arg1, arg2, arg3 = GetCursorInfo()
 	if itemtype == "item" or itemtype == "spell" then
-		DropSpell(self, itemtype, arg1, arg2, arg3)		
+		DropSpell(self, itemtype, arg1, arg2, arg3)
 	end
 end
 
@@ -190,7 +191,7 @@ local function PickupSpellFromTimer(self)
 	if InCombatLockdown() then return end
 	local role = GetSpecialization()
 	if not self.timer.active then return end
-	if self.timer.type == "spell" then		
+	if self.timer.type == "spell" then
 		PickupSpell(self.timer.spellID)
 	elseif self.timer.type == "item" then
 		PickupItem(self.timer.item)
@@ -200,7 +201,7 @@ local function PickupSpellFromTimer(self)
 	--self.NormalTexture:Show()
 	self.icon:SetTexture(nil)
 	self.timer:Deactivate()
-	self:Show()	
+	self:Show()
 end
 
 
@@ -210,13 +211,13 @@ function XiTimers:new(unclickable, unconfigurable)
 	local self = {}
 	setmetatable(self, XiTimers)
 	XiTimers.nrOfTimers = XiTimers.nrOfTimers + 1
-    self.nr = XiTimers.nrOfTimers
+	self.nr = XiTimers.nrOfTimers
 	self.active = false
-    self.unclickable = unclickable
+	self.unclickable = unclickable
 	if unclickable then
-        self.button = CreateFrame("CheckButton", "XiTimers_Timer"..XiTimers.nrOfTimers, UIParent, "XiTimersLiteUnsecureTemplate")
-    else
-        self.button = CreateFrame("CheckButton", "XiTimers_Timer"..XiTimers.nrOfTimers, UIParent, "XiTimersLiteTemplate")
+		self.button = CreateFrame("CheckButton", "XiTimers_Timer"..XiTimers.nrOfTimers, UIParent, "XiTimersLiteUnsecureTemplate")
+	else
+		self.button = CreateFrame("CheckButton", "XiTimers_Timer"..XiTimers.nrOfTimers, UIParent, "XiTimersLiteTemplate")
 		RegisterStateDriver(self.button, "petbattle", "[petbattle][overridebar][possessbar] active; none")
 		RegisterStateDriver(self.button, "combat", "[combat] active; none")
 		self.button:WrapScript(self.button, "OnAttributeChanged", [[
@@ -235,55 +236,55 @@ function XiTimers:new(unclickable, unconfigurable)
 				end
 			end
 		]])
-		
-    end
+
+	end
 	--self.button:SetPoint("CENTER", UIParent, "CENTER")
 	self.button.timer = self
-	
+
 	--for rActionButtonStyler
-	self.button.action = 0 
-    self.button:SetCheckedTexture(nil)
+	self.button.action = 0
+	self.button:SetCheckedTexture(nil)
 	self.button.SetCheckedTexture = function() end
-    self.button.SetChecked = function() end
-    self.button.GetChecked = function() return false end
-    self.button.SetDisabledCheckedTexture = function() end
-    
+	self.button.SetChecked = function() end
+	self.button.GetChecked = function() return false end
+	self.button.SetDisabledCheckedTexture = function() end
+
 	self.button.unclickable = unclickable
 	self.button.element = XiTimers.nrOfTimers
-	
+
 	self.button:RegisterForClicks("AnyDown")
-    
-	
+
+
 	self.timer = 0
-    self.duration = 0
-    self.barTimer = 0
-    self.barDuration = 0
+	self.duration = 0
+	self.barTimer = 0
+	self.barDuration = 0
 	self.smallTimer = 0
 	self.smallTimerDuration = 0
 	self.button.icons = {}
 	self.button.flash = {}
 
 	self.timerBar = CreateFrame("StatusBar", "XiTimers_TimerBar"..XiTimers.nrOfTimers, self.button, "XiTimersTimerBarTemplate")
-    self.timerBar.background = _G["XiTimers_TimerBar"..XiTimers.nrOfTimers.."Background"]
-    self.timerBar.time = _G["XiTimers_TimerBar"..XiTimers.nrOfTimers.."Time"]
-    self.timerBar.icon = _G["XiTimers_TimerBar"..XiTimers.nrOfTimers.."Icon"]
-    self.timerBar:SetPoint("TOP", self.button, "BOTTOM")
+	self.timerBar.background = _G["XiTimers_TimerBar"..XiTimers.nrOfTimers.."Background"]
+	self.timerBar.time = _G["XiTimers_TimerBar"..XiTimers.nrOfTimers.."Time"]
+	self.timerBar.icon = _G["XiTimers_TimerBar"..XiTimers.nrOfTimers.."Icon"]
+	self.timerBar:SetPoint("TOP", self.button, "BOTTOM")
 	self.button.icon = _G["XiTimers_Timer"..XiTimers.nrOfTimers.."Icon"]
 	self.button.flash = _G["XiTimers_Timer"..XiTimers.nrOfTimers.."Flash"]
-    if self.button.flash then
-        local flash = self.button.flash
-        flash.animation = self.button.flash:CreateAnimationGroup()
-        flash.animation:SetLooping("NONE")
-        flash.flashAnim = flash.animation:CreateAnimation()
-        flash.flashAnim:SetDuration(15)
-        flash.flashAnim.flash = flash
-        flash.flashAnim:SetScript("OnPlay", function(self) self.flash:Show() end)
-        flash.flashAnim:SetScript("OnFinished", function(self) self.flash:Hide() end)
-        flash.flashAnim:SetScript("OnStop", function(self) self.flash:Hide() end)
-        flash.flashAnim:SetScript("OnUpdate", function(self) self.flash:SetAlpha(BuffFrame.BuffAlphaValue) end)
+	if self.button.flash then
+		local flash = self.button.flash
+		flash.animation = self.button.flash:CreateAnimationGroup()
+		flash.animation:SetLooping("NONE")
+		flash.flashAnim = flash.animation:CreateAnimation()
+		flash.flashAnim:SetDuration(15)
+		flash.flashAnim.flash = flash
+		flash.flashAnim:SetScript("OnPlay", function(self) self.flash:Show() end)
+		flash.flashAnim:SetScript("OnFinished", function(self) self.flash:Hide() end)
+		flash.flashAnim:SetScript("OnStop", function(self) self.flash:Hide() end)
+		flash.flashAnim:SetScript("OnUpdate", function(self) self.flash:SetAlpha(BuffFrame.BuffAlphaValue) end)
 	end
-    if self.button.icon then
-        local flash = self.button.icon
+	if self.button.icon then
+		local flash = self.button.icon
 		flash.animation = self.button.flash:CreateAnimationGroup()
 		flash.animation:SetLooping("NONE")
 		flash.flashAnim = flash.animation:CreateAnimation()
@@ -291,22 +292,22 @@ function XiTimers:new(unclickable, unconfigurable)
 		flash.flashAnim.flash = flash
 		flash.flashAnim:SetScript("OnPlay", function(self) self.flash:Show() end)
 		flash.flashAnim:SetScript("OnUpdate", function(self) self.flash:SetAlpha(BuffFrame.BuffAlphaValue) end)
-    end
+	end
 	self:SetIconAlpha(self.button.icon, 1)
-	
-    self.timeColor = {r=1,g=1,b=1}
+
+	self.timeColor = {r=1,g=1,b=1}
 	self.button.icon:Show()
 	self.timerBarPos = "BOTTOM"
 	self.timeSpacing = 0
 	self.spacing = 5
 	self.timeStyle = "mm:ss"
-    self.OOCAlpha = 0.4
+	self.OOCAlpha = 0.4
 	self.maxAlpha = 1
 	self.warningMsg = nil
-    self.warningSpell = nil
+	self.warningSpell = nil
 	self.expirationMsg = nil
 	self.earlyExpirationMsg = nil
-    self.warningIcon = nil
+	self.warningIcon = nil
 	self.activeCooldownAlpha = 0.4
 	self.events = {}
 	self.button.count = _G["XiTimers_Timer"..XiTimers.nrOfTimers.."Count"]
@@ -314,55 +315,55 @@ function XiTimers:new(unclickable, unconfigurable)
 	self.button.cooldown:SetSwipeColor(0, 0, 0)
 	self.button.cooldown:SetHideCountdownNumbers(true)
 	self.button.miniIcon = _G["XiTimers_Timer"..XiTimers.nrOfTimers.."MiniIcon"]
-    self.button.miniIconFrame = _G["XiTimers_Timer"..XiTimers.nrOfTimers.."Mini"]
-    self.button.bar = _G["XiTimers_Timer"..XiTimers.nrOfTimers.."Bar"]
+	self.button.miniIconFrame = _G["XiTimers_Timer"..XiTimers.nrOfTimers.."Mini"]
+	self.button.bar = _G["XiTimers_Timer"..XiTimers.nrOfTimers.."Bar"]
 	self.button.bar:SetStatusBarColor(0.6,0.6,1.0,0.7)
-    self.button.hotkey = _G["XiTimers_Timer"..XiTimers.nrOfTimers.."HotKey"]
-    self.button.rangeCount = _G["XiTimers_Timer"..XiTimers.nrOfTimers.."RangeCount"]
+	self.button.hotkey = _G["XiTimers_Timer"..XiTimers.nrOfTimers.."HotKey"]
+	self.button.rangeCount = _G["XiTimers_Timer"..XiTimers.nrOfTimers.."RangeCount"]
 	--self.button.normalTexture = _G["XiTimers_Timer"..XiTimers.nrOfTimers.."NormalTexture"]
 	self.button:SetNormalTexture(nil)
 	local frame = CreateFrame("Frame", nil, self.button)
-    frame:Show()
-    frame:SetAllPoints(self.button)
-    self.button.time = frame:CreateFontString(self.button:GetName().."Time", 'OVERLAY')
-    self.button.time:SetPoint("CENTER",0,1)
-    self.button.time:SetFont("Fonts\\FRIZQT__.TTF", 17, "OUTLINE")
-    frame:SetFrameLevel(frame:GetFrameLevel()+10)
-    self.button.time:Hide()
-    --self.button.cooldown:SetFrameLevel(self.button.cooldown:GetFrameLevel()-1)
-    self.button.cooldown.noCooldownCount = true
-    self.button.cooldown.noOCC = true
-    self.rangeCheckCount = 0
-    self.manaCheckCount = 0
+	frame:Show()
+	frame:SetAllPoints(self.button)
+	self.button.time = frame:CreateFontString(self.button:GetName().."Time", 'OVERLAY')
+	self.button.time:SetPoint("CENTER",0,1)
+	self.button.time:SetFont("Fonts\\FRIZQT__.TTF", 17, "OUTLINE")
+	frame:SetFrameLevel(frame:GetFrameLevel()+10)
+	self.button.time:Hide()
+	--self.button.cooldown:SetFrameLevel(self.button.cooldown:GetFrameLevel()-1)
+	self.button.cooldown.noCooldownCount = true
+	self.button.cooldown.noOCC = true
+	self.rangeCheckCount = 0
+	self.manaCheckCount = 0
 	self.running = false
-	    
-    self.animation = XiTimersAnimations:new(self.button)
-	
+
+	self.animation = XiTimersAnimations:new(self.button)
+
 	if not IsAddOnLoaded("rActionButtonStyler") then
 		self:HideNormalTexture()
 	else
 		ActionButton_Update(self.button)
 	end
-    
+
 	self.anchors = {}
 	self.anchorchilds = {}
-	
+
 	--self.button:SetScript("OnDragStart", XiTimers.StartMoving)
 	--self.button:SetScript("OnDragStop", XiTimers.StopMoving)
-    --self.button:SetAttribute("_ondragstart", [[control:CallMethod("StartMove")]])
-    --self.button:SetAttribute("_ondragstop", [[control:CallMethod("StopMoving")]])
-    self.button.StartMove = XiTimers.StartMoving
-    self.button.StopMove = XiTimers.StopMoving
+	--self.button:SetAttribute("_ondragstart", [[control:CallMethod("StartMove")]])
+	--self.button:SetAttribute("_ondragstop", [[control:CallMethod("StopMoving")]])
+	self.button.StartMove = XiTimers.StartMoving
+	self.button.StopMove = XiTimers.StopMoving
 	self.button:RegisterForDrag("LeftButton")
-    
+
 	table.insert(Timers, self)
-	
+
 	if not unconfigurable then
 		self.button:SetAttribute("_onreceivedrag",
-			[[ 
-				control:CallMethod("DropSpell", kind, value, ...)
-				return "clear"
-			]])
+				[[
+                    control:CallMethod("DropSpell", kind, value, ...)
+                    return "clear"
+                ]])
 		self.button:WrapScript(self.button, "OnClick", [[
 			if self:GetAttribute("unlocked") then
 				control:CallMethod("DropSpellClick")
@@ -373,26 +374,26 @@ function XiTimers:new(unclickable, unconfigurable)
 		self.button.DropSpell = DropSpell
 		self.button.DropSpellClick = DropSpellClick
 		self.button.PickupSpell = PickupSpellFromTimer
-		
+
 	end
 	self.button.ShowTooltip = XiTimers.Tooltip
-    self.button.HideTooltip = function(self) GameTooltip:Hide() end
+	self.button.HideTooltip = function(self) GameTooltip:Hide() end
 	--self.button:SetAttribute("_onenter", [[ control:CallMethod("ShowTooltip")]])
 	--self.button:SetAttribute("_onleave", [[ control:CallMethod("HideTooltip")]])
-	
-	
 
-    -- self.button:SetAttribute("_onattributechanged", [[ 
-        -- if name=="state-invehicle" then
-            -- if value == "show" and self:GetAttribute("active") then
-                -- self:Show()
-            -- else
-                -- self:Hide()
-            -- end
-        -- end
-        -- ]])
 
-    self.button:Hide()
+
+	-- self.button:SetAttribute("_onattributechanged", [[
+	-- if name=="state-invehicle" then
+	-- if value == "show" and self:GetAttribute("active") then
+	-- self:Show()
+	-- else
+	-- self:Hide()
+	-- end
+	-- end
+	-- ]])
+
+	self.button:Hide()
 	self.configurable = not unconfigurable
 	return self
 end
@@ -401,13 +402,13 @@ function XiTimers.Tooltip(self)
 	local spell = self.timer.spellID
 	if not spell then spell = self:GetAttribute("spell1") end
 	if spell and spell > 0 then
-	    if not XiTimers.TooltipsAtButtons then 
+		if not XiTimers.TooltipsAtButtons then
 			GameTooltip_SetDefaultAnchor(GameTooltip, self)
 		else
 			local left = self:GetLeft()
 			if left<UIParent:GetWidth()/2 then
 				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-			else			
+			else
 				GameTooltip:SetOwner(self, "ANCHOR_LEFT")
 			end
 		end
@@ -419,10 +420,10 @@ end
 local IsUsableSpell = IsUsableSpell
 
 function XiTimers:Update(now)
-	if not self.running or self.buffCount then return end	
-    local button = self.button
-	
-	if self.timer > 0 then			
+	if not self.running or self.buffCount then return end
+	local button = self.button
+
+	if self.timer > 0 then
 		self.timer = self.endTime - now
 		if self.timer <= 0 then
 			self:Stop()
@@ -447,11 +448,11 @@ function XiTimers:Update(now)
 					self.timerBar:SetValue(timer)
 				end
 			end
-			
-			if self.buffIsActive then 
+
+			if self.buffIsActive then
 				button.bar:SetValue(self.timer)
 			end
-			
+
 			if not self.isAnimating and timer <= 5 and timer > 0 then
 				self.isAnimating = true
 				if not self.dontFlash then
@@ -462,7 +463,7 @@ function XiTimers:Update(now)
 						self.button.icon.animation:Play()
 					end]]
 				end
-			end 
+			end
 		end
 	end
 end
@@ -474,10 +475,10 @@ function XiTimers:Activate()
 		self.button:RegisterEvent(event)
 	end
 	if not self.hideInactive and (not self.HideOOC or InCombatLockdown()) then
-        self.button:Show()        
-    end
+		self.button:Show()
+	end
 	self.button:SetAttribute("active", true)
-    if self.rangeCheck or self.manaCheck then
+	if self.rangeCheck or self.manaCheck then
 		self:AddRangeCheck()
 	end
 	if self.continuousUpdate then
@@ -491,7 +492,7 @@ function XiTimers:Deactivate()
 		self.button:UnregisterEvent(event)
 	end
 	self.button:Hide()
-    self.button:SetAttribute("active", false)
+	self.button:SetAttribute("active", false)
 	self:RemoveRangeCheck()
 	if self.buff and buffTimers[buff] then
 		for i=1,#buffTimers[buff] do
@@ -512,7 +513,7 @@ function XiTimers:Start(startTime, endTime, buff, buffCount, charges, maxcharges
 	self.startTime = startTime
 	self.endTime = endTime
 	duration = endTime - startTime
-    self.duration = duration
+	self.duration = duration
 	local timerbar = self.timerBar
 	local time = endTime - GetTime()
 	if buff and buffCount then
@@ -521,17 +522,17 @@ function XiTimers:Start(startTime, endTime, buff, buffCount, charges, maxcharges
 		self.timer = time
 	end
 	if self.timer < 0 then return end
-	
+
 	if not self.timerOnButton then
 		if time >= 600 then
-			FormatTime(timerbar.time, self.timer, "blizz")
+			FormatTime(timerBar.time, self.timer, "blizz")
 		else
-			FormatTime(timerbar.time, self.timer, self.timeStyle)
+			FormatTime(timerBar.time, self.timer, self.timeStyle)
 		end
 	else
 		SetButtonTime(self.button.time, self.timer)
 	end
-	
+
 	timerbar:SetMinMaxValues(0, duration)
 	self.running = true
 
@@ -543,14 +544,14 @@ function XiTimers:Start(startTime, endTime, buff, buffCount, charges, maxcharges
 	else
 		self:SetIconAlpha(self.button.icon, self.activeCooldownAlpha)
 	end
-    --if self.reverseAlpha and not (charges and charges > 0) then self:SetIconAlpha(self.button.icon, self.activeCooldownAlpha) end
+	--if self.reverseAlpha and not (charges and charges > 0) then self:SetIconAlpha(self.button.icon, self.activeCooldownAlpha) end
 
 	if not self.hideTime then
 		if not self.timerOnButton then
 			self.button.time:Hide()
-			self:ShowTimerBar() 
+			self:ShowTimerBar()
 		else
-			self:HideTimerBar() 
+			self:HideTimerBar()
 			self.button.time:Show()
 			--self.button.time:SetTextColor(self.timeColor.r,self.timeColor.g,self.timeColor.b)
 		end
@@ -558,7 +559,7 @@ function XiTimers:Start(startTime, endTime, buff, buffCount, charges, maxcharges
 		self.button.time:Hide()
 		self:HideTimerBar()
 	end
-	
+
 	self.buffIsActive = buff
 	self.buffCount = buffCount
 	if buff then
@@ -580,14 +581,14 @@ function XiTimers:Start(startTime, endTime, buff, buffCount, charges, maxcharges
 		self.button.cooldown:Hide()
 	end
 
-    self.button.flash.animation:Stop()
-    self.isAnimating = false
-    --self.flashRed = XiTimers.flashRed
-    --self.button.bar:SetValue(0)
-    self:SetTimerBarPos(self.timerBarPos, true)
-    if self.hideInactive then
-        self.button:Show()
-    end
+	self.button.flash.animation:Stop()
+	self.isAnimating = false
+	--self.flashRed = XiTimers.flashRed
+	--self.button.bar:SetValue(0)
+	self:SetTimerBarPos(self.timerBarPos, true)
+	if self.hideInactive then
+		self.button:Show()
+	end
 	if not buff and duration >= 45 then
 		self.dontFlash = false
 	else
@@ -595,33 +596,33 @@ function XiTimers:Start(startTime, endTime, buff, buffCount, charges, maxcharges
 	end
 end
 
-function XiTimers:Stop()	
+function XiTimers:Stop()
 	if not self.running then return end
 	self.running = false
 	local timerbar = self.timerBar
-    --[[if not self.stopQuiet then
+	--[[if not self.stopQuiet then
         if self.StopPulse then
             self.animation:SetTexture(self.button.icon:GetTexture())
             self.animation:Play()
         end
     end]]
-    self.stopQuiet = false
+	self.stopQuiet = false
 	timerbar.time:SetText("")
-	if self.visibleTimerBars then		
+	if self.visibleTimerBars then
 		timerbar:SetValue(0)
 	end
-    self:HideTimerBar(timer)
-    self.button.time:Hide()
-    self.button.cooldown:Hide()
-    if not self.dontAlpha then self:SetIconAlpha(self.button.icon, self.activeCooldownAlpha) end
-    if self.reverseAlpha then self:SetIconAlpha(self.button.icon,self.maxAlpha) end    
-    self:SetTimerBarPos(self.timerBarPos, true)
-    if self.hideInactive then
-        self.button:Hide()
-    end
-    self:SetOutOfRange(false)
+	self:HideTimerBar(timer)
+	self.button.time:Hide()
+	self.button.cooldown:Hide()
+	if not self.dontAlpha then self:SetIconAlpha(self.button.icon, self.activeCooldownAlpha) end
+	if self.reverseAlpha then self:SetIconAlpha(self.button.icon,self.maxAlpha) end
+	self:SetTimerBarPos(self.timerBarPos, true)
+	if self.hideInactive then
+		self.button:Hide()
+	end
+	self:SetOutOfRange(false)
 	self.timer = 0
-	
+
 	if self.buffIsActive then
 		self.button.bar:Hide()
 		self.button.bar:SetValue(0)
@@ -635,31 +636,31 @@ end
 
 
 function XiTimers:SetOutOfRange(outOfRange)
-    self.outOfRange = outOfRange
-    self:UpdateButtonColor()
+	self.outOfRange = outOfRange
+	self:UpdateButtonColor()
 end
 
 function XiTimers:SetOutOfMane(outOfMana)
-    self.outOfMana = outOfMana
-    self:UpdateButtonColor()
+	self.outOfMana = outOfMana
+	self:UpdateButtonColor()
 end
 
 function XiTimers:UpdateButtonColor()
-    if self.outOfRange then
-        self.button.icon:SetVertexColor(1,0,0)
-    elseif self.outOfMana then
-        self.button.icon:SetVertexColor(0.5,0.5,2)
-    else
-        self.button.icon:SetVertexColor(1,1,1)
-    end
+	if self.outOfRange then
+		self.button.icon:SetVertexColor(1,0,0)
+	elseif self.outOfMana then
+		self.button.icon:SetVertexColor(0.5,0.5,2)
+	else
+		self.button.icon:SetVertexColor(1,1,1)
+	end
 end
 
 function XiTimers:StartMoving()
-    if self.timer.locked then return end
+	if self.timer.locked then return end
 	if self.anchorframe and not self.timer.savePos then
 		self.anchorframe:StartMoving()
 	else
-		self:StartMoving() 
+		self:StartMoving()
 	end
 end
 
@@ -669,14 +670,14 @@ function XiTimers:StopMoving()
 	else
 		self:StopMovingOrSizing()
 	end
-    if XiTimers.SaveFramePositions then XiTimers.SaveFramePositions() end
-    self.timer:SetTimerBarPos(self.timer.timerBarPos, true)
+	if XiTimers.SaveFramePositions then XiTimers.SaveFramePositions() end
+	self.timer:SetTimerBarPos(self.timer.timerBarPos, true)
 end
 
 function XiTimers:SetIconAlpha(icon, alpha)
-    if icon then
-        icon:SetAlpha(alpha)
-    end
+	if icon then
+		icon:SetAlpha(alpha)
+	end
 end
 
 function XiTimers:SetReverseAlpha(ralpha)
@@ -686,51 +687,51 @@ function XiTimers:SetReverseAlpha(ralpha)
 			self:SetIconAlpha(self.button.icon, self.maxAlpha)
 		else
 			self:SetIconAlpha(self.button.icon, self.activeCooldownAlpha)
-		end		
+		end
 	elseif not self.dontAlpha then
 		if not self.reverseAlpha then
 			self:SetIconAlpha(self.button.icon, self.activeCooldownAlpha)
 		else
 			self:SetIconAlpha(self.button.icon, self.maxAlpha)
-		end	
+		end
 	end
 end
 
 function XiTimers:SetAlpha(alpha)
-    self.button:SetAlpha(alpha)
+	self.button:SetAlpha(alpha)
 end
 
 function XiTimers:HideTimerBar()
 	self.timerBar.background:Hide()
-    self.timerBar.background:SetValue(0)
-    ---self.timerBars[nr].icon:Hide()
-    self.timerBar:Hide()
+	self.timerBar.background:SetValue(0)
+	---self.timerBars[nr].icon:Hide()
+	self.timerBar:Hide()
 end
 
 function XiTimers:ShowTimerBar()
-    self.timerBar:Show()
+	self.timerBar:Show()
 	if self.visibleTimerBars then
-        self.timerBar.background:Show()
-        self.timerBar.background:SetValue(1)
-    end
+		self.timerBar.background:Show()
+		self.timerBar.background:SetValue(1)
+	end
 end
 
 -- display functions
 
 function XiTimers:SetTimerBarPos(side, notReanchor)
 	self.timerBarPos = side
-	
+
 	local TimerBar = self.timerBar
-		
+
 	TimerBar:ClearAllPoints()
-    TimerBar.icon:ClearAllPoints()
-	
-    if side == "RIGHT" then
-        TimerBar.icon:SetPoint("LEFT", TimerBar, "RIGHT", -4, 0)
-    else
-        TimerBar.icon:SetPoint("RIGHT", TimerBar, "LEFT", 4, 0)
-    end
-    local activetimers = 1
+	TimerBar.icon:ClearAllPoints()
+
+	if side == "RIGHT" then
+		TimerBar.icon:SetPoint("LEFT", TimerBar, "RIGHT", -4, 0)
+	else
+		TimerBar.icon:SetPoint("RIGHT", TimerBar, "LEFT", 4, 0)
+	end
+	local activetimers = 1
 	if side == "LEFT" then
 		TimerBar:SetPoint("RIGHT", self.button, "LEFT", -self.timeSpacing, TimerBar:GetHeight()*TimerBar:GetEffectiveScale()/2)
 	elseif side == "RIGHT" then
@@ -738,7 +739,7 @@ function XiTimers:SetTimerBarPos(side, notReanchor)
 	elseif side == "TOP" then
 		TimerBar:SetPoint("BOTTOM", self.button, "TOP", 0, self.timeSpacing)
 	elseif side == "BOTTOM" then
-   		TimerBar:SetPoint("TOP", self.button, "BOTTOM", 0, -self.timeSpacing)
+		TimerBar:SetPoint("TOP", self.button, "BOTTOM", 0, -self.timeSpacing)
 	end
 	if not InCombatLockdown() and not notReanchor then self:Reanchor() end
 end
@@ -746,10 +747,10 @@ end
 function XiTimers:GetBorder(side)
 	local timerBarPos = self.timerBarPos
 	if side == "TOP" and timerBarPos == "TOP" or side == "BOTTOM" and timerBarPos == "BOTTOM" then
-        local height = self.timerBar:GetHeight()*self.timerBar:GetEffectiveScale()
+		local height = self.timerBar:GetHeight()*self.timerBar:GetEffectiveScale()
 		return self.timerOnButton and 0 or self.timeSpacing + height
 	elseif ((side == "LEFT" and timerBarPos == "LEFT" or side == "RIGHT" and timerBarPos == "RIGHT") and not self.timerOnButton)
-    then
+	then
 		return (self.timeSpacing + self.timerBar:GetWidth()*self.timerBar:GetEffectiveScale())
 	end
 	return 0
@@ -765,10 +766,10 @@ function XiTimers:SetHeight(height)
 end
 
 function XiTimers:SetFont(font)
-    local _,height = self.timerBar.time:GetFont()
-    self.timerBar.time:SetFont(font, height)
-    local _,height = self.button.time:GetFont()
-    self.button.time:SetFont(font, height, "OUTLINE")
+	local _,height = self.timerBar.time:GetFont()
+	self.timerBar.time:SetFont(font, height)
+	local _,height = self.button.time:GetFont()
+	self.button.time:SetFont(font, height, "OUTLINE")
 end
 
 function XiTimers:SetTimeHeight(height)
@@ -791,13 +792,13 @@ function XiTimers:SetScale(scale)
 end
 
 function XiTimers:SetBarTexture(texture)
-    self.timerBar:SetStatusBarTexture(texture)
-    self.timerBar.background:SetStatusBarTexture(texture)
+	self.timerBar:SetStatusBarTexture(texture)
+	self.timerBar.background:SetStatusBarTexture(texture)
 end
 
 function XiTimers:SetBarColor(r,g,b)
-    self.timerBar:SetStatusBarColor(r,g,b, 1.0)
-    self.timerBar.background:SetStatusBarColor(r,g,b,0.4)
+	self.timerBar:SetStatusBarColor(r,g,b, 1.0)
+	self.timerBar.background:SetStatusBarColor(r,g,b,0.4)
 end
 
 
@@ -807,10 +808,10 @@ local CounterPositions = {
 	CENTER = "CENTER",
 	LEFT = "RIGHT",
 	RIGHT = "LEFT",
-	TOP = "BOTTOM", 
+	TOP = "BOTTOM",
 	BOTTOM = "TOP",
-    TOPLEFT = "BOTTOM",
-    TOPRIGHT = "BOTTOM",
+	TOPLEFT = "BOTTOM",
+	TOPRIGHT = "BOTTOM",
 }
 
 local DirectionXMult = {
@@ -819,8 +820,8 @@ local DirectionXMult = {
 	RIGHT = -1,
 	TOP = 0,
 	BOTTOM = 0,
-    TOPRIGHT = -1,
-    TOPLEFT = 1,
+	TOPRIGHT = -1,
+	TOPLEFT = 1,
 }
 
 local DirectionYMult = {
@@ -829,27 +830,27 @@ local DirectionYMult = {
 	RIGHT = 0,
 	TOP = -1,
 	BOTTOM = -1,
-    TOPRIGHT = -1,
-    TOPLEFT = -1,
+	TOPRIGHT = -1,
+	TOPLEFT = -1,
 }
 
 
 function XiTimers:SetPoint(pos, relframe, relpos, halfspace)
 	local relborder = 0
-	if relframe.button then 
+	if relframe.button then
 		if not relpos then relborder = relframe:GetBorder(CounterPositions[pos])
-        else relborder = relframe:GetBorder(relpos) end
+		else relborder = relframe:GetBorder(relpos) end
 		relframe = relframe.button
 	end
 	local borderx = self:GetBorder(pos)+relborder
-    local bordery = borderx
-    --hack for anchoring TOPRIGHT or TOPLEFT to BOTTOM, maybe change it account for all anchors someday if needed
-    if relpos == "BOTTOM" then borderx = 0 end
+	local bordery = borderx
+	--hack for anchoring TOPRIGHT or TOPLEFT to BOTTOM, maybe change it account for all anchors someday if needed
+	if relpos == "BOTTOM" then borderx = 0 end
 	self.button:ClearAllPoints()
-    if not relpos then relpos = CounterPositions[pos] end
-    local spacingx = self.spacing
-    if halfspace then spacingx = spacingx / 2 end
-    local spacingy = self.spacing
+	if not relpos then relpos = CounterPositions[pos] end
+	local spacingx = self.spacing
+	if halfspace then spacingx = spacingx / 2 end
+	local spacingy = self.spacing
 	self.button:SetPoint(pos, relframe, relpos, (spacingx+borderx)*DirectionXMult[pos], (spacingy+bordery)*DirectionYMult[pos])
 end
 
@@ -857,7 +858,7 @@ end
 function XiTimers:Anchor(timer, point, relpoint, halfspace)
 	table.insert(self.anchors, {timer = timer, point = point, relpoint = relpoint, halfspace = halfspace})
 	table.insert(timer.anchorchilds, self)
-	self:SetPoint(point, timer, relpoint, halfspace) 
+	self:SetPoint(point, timer, relpoint, halfspace)
 end
 
 -- updates the positions of all frames anchored to this timer
@@ -888,9 +889,9 @@ end
 
 
 function XiTimers:Show()
-    self.button:Show()
+	self.button:Show()
 	self:ShowTimerBar()
-    --[[for i=1,self.nrOfTimers do
+	--[[for i=1,self.nrOfTimers do
         if self.timers[i] > 0 then
             self:ShowTimerBar(i)
         end
@@ -898,17 +899,17 @@ function XiTimers:Show()
 end
 
 function XiTimers:Hide()
-    self.button:Hide()
+	self.button:Hide()
 	self:HideTimerBar()
-   --[[ for i=1,self.nrOfTimers do
-        if self.timers[i] > 0 then
-            self:HideTimerBar(i)
-        end
-    end]]
+	--[[ for i=1,self.nrOfTimers do
+         if self.timers[i] > 0 then
+             self:HideTimerBar(i)
+         end
+     end]]
 end
 
 function XiTimers:HideNormalTexture()
-	--self.button.normalTexture:SetTexture(1,1,1,0)		
+	--self.button.normalTexture:SetTexture(1,1,1,0)
 end
 
 function XiTimers:Clickthrough(value)
@@ -927,18 +928,18 @@ oocframe:RegisterEvent("PLAYER_REGEN_DISABLED")
 
 
 function XiTimers.invokeOOCFader()
-    XiTimers.OOCFaderEvent(nil, (InCombatLockdown() and "PLAYER_REGEN_DISABLED") or "PLAYER_REGEN_ENABLED")
+	XiTimers.OOCFaderEvent(nil, (InCombatLockdown() and "PLAYER_REGEN_DISABLED") or "PLAYER_REGEN_ENABLED")
 end
 
 XiTimers.OOCFaderEvent = function(self, event, arg1, arg2)
-    if event == "PLAYER_REGEN_ENABLED" then
-        incombat = false
-        for _,timer in pairs(XiTimers.timers) do
-            if timer.active and timer.unclickable and timer.HideOOC then
-                timer:Hide()
-            end
-            timer.button:SetAlpha(timer.OOCAlpha)
-        end
+	if event == "PLAYER_REGEN_ENABLED" then
+		incombat = false
+		for _,timer in pairs(XiTimers.timers) do
+			if timer.active and timer.unclickable and timer.HideOOC then
+				timer:Hide()
+			end
+			timer.button:SetAlpha(timer.OOCAlpha)
+		end
 		if XiTimers.PowerBar and XiTimers.PowerBar.active then
 			if XiTimers.ActiveProfile.PowerBarHideOOC then
 				XiTimers.PowerBar:Hide()
@@ -947,14 +948,14 @@ XiTimers.OOCFaderEvent = function(self, event, arg1, arg2)
 			end
 			XiTimers.PowerBar:SetAlpha(XiTimers.PowerBar.OOCAlpha)
 		end
-    elseif event == "PLAYER_REGEN_DISABLED" then
-        incombat = true
-        for _,timer in pairs(XiTimers.timers, true) do
-            if timer.active and timer.unclickable and timer.HideOOC and not timer.hideInactive then
-                timer:Show()
-            end			
-            timer.button:SetAlpha(1)
-        end  
+	elseif event == "PLAYER_REGEN_DISABLED" then
+		incombat = true
+		for _,timer in pairs(XiTimers.timers, true) do
+			if timer.active and timer.unclickable and timer.HideOOC and not timer.hideInactive then
+				timer:Show()
+			end
+			timer.button:SetAlpha(1)
+		end
 		if XiTimers.PowerBar and XiTimers.PowerBar.active then
 			XiTimers.PowerBar:Show()
 			XiTimers.PowerBar:SetAlpha(1)
@@ -963,6 +964,70 @@ XiTimers.OOCFaderEvent = function(self, event, arg1, arg2)
 end
 
 oocframe:SetScript("OnEvent", XiTimers.OOCFaderEvent)
+
+local minigameBuffs = {
+	[298659] = true, -- Arcane Leylock
+	[298657] = true,
+	[298654] = true,
+	[298047] = true,
+	[298565] = true,
+}
+
+
+local minigameActive = false
+
+XiTimers.HideMiniGameEvent = function(self, event)
+	if (event == "UNIT_AURA") then
+		if (InCombatLockdown()) then return end
+		local minigameFound = false
+		local counter = 0
+		while true do
+			counter = counter + 1
+			local name,_,count,_,duration, expiration,_,_,_,spellID = UnitAura("player", counter)
+			if not name then break end
+			if (minigameBuffs[spellID]) then
+				minigameFound = true
+			end
+		end
+		if minigameFound then
+			minigameActive = true
+			for _,timer in pairs(XiTimers.timers) do
+				if timer.active then
+					timer:Hide()
+				end
+			end
+			if XiTimers.PowerBar and XiTimers.PowerBar.active then
+				XiTimers.PowerBar:Hide()
+			end
+		else
+			if minigameActive then
+				minigameActive = false
+				for _,timer in pairs(XiTimers.timers) do
+					if timer.active then
+						timer:Show()
+					end
+				end
+				if XiTimers.PowerBar and XiTimers.PowerBar.active then
+					XiTimers.PowerBar:Show()
+				end
+				XiTimers.invokeOOCFader()
+			end
+		end
+	elseif event == "PLAYER_REGEN_DISABLED" then
+		self:UnregisterEvent("UNIT_AURA")
+	elseif event == "PLAYER_REGEN_ENABLED" then
+		self:RegisterUnitEvent("UNIT_AURA", "player")
+	end
+end
+
+local minigameframe = CreateFrame("Frame", "XiTimersMinigameFrame")
+minigameframe:SetScript("OnEvent", XiTimers.HideMiniGameEvent)
+minigameframe:RegisterEvent("PLAYER_REGEN_ENABLED")
+minigameframe:RegisterEvent("PLAYER_REGEN_DISABLED")
+minigameframe:RegisterUnitEvent("UNIT_AURA", "player")
+
+
+
 
 local rangeManaFrame = CreateFrame("Frame")
 local lastRangeUpdate = 0
@@ -973,35 +1038,35 @@ local function rangeManaUpdate(self, elapsed)
 	if lastRangeUpdate > #rangeManaCheckFrames then lastRangeUpdate = 1 end
 	local timer = rangeManaCheckFrames[lastRangeUpdate]
 	if not timer then return end
-    if timer.rangeCheck then
-        --self.rangeCheckCount = self.rangeCheckCount + 1
-        --if self.rangeCheckCount > 8 then
-           -- self.rangeCheckCount = 0
-            timer.outofrange = SpellRange.IsSpellInRange(timer.rangeCheck, "target") == 0			
-            if timer.outofrange then
-                timer.button.icon:SetVertexColor(1,0,0)
-            else
-                timer.button.icon:SetVertexColor(1,1,1)
-            end
-       -- end
-    end
-    
-    if timer.manaCheck then
-        --self.manaCheckCount = self.manaCheckCount + 1
-        --if self.manaCheckCount > 8 then
-            --self.manaCheckCount = 0
-            local _,nomana = IsUsableSpell(timer.manaCheck)
-			if nomana then
-                timer.button.icon:SetVertexColor(0.5,0.5,1)
-            else
-                if timer.outofrange then
-                    timer.button.icon:SetVertexColor(1,0,0)
-                else
-                    timer.button.icon:SetVertexColor(1,1,1)
-                end
-            end
-        --end
-    end
+	if timer.rangeCheck then
+		--self.rangeCheckCount = self.rangeCheckCount + 1
+		--if self.rangeCheckCount > 8 then
+		-- self.rangeCheckCount = 0
+		timer.outofrange = SpellRange.IsSpellInRange(timer.rangeCheck, "target") == 0
+		if timer.outofrange then
+			timer.button.icon:SetVertexColor(1,0,0)
+		else
+			timer.button.icon:SetVertexColor(1,1,1)
+		end
+		-- end
+	end
+
+	if timer.manaCheck then
+		--self.manaCheckCount = self.manaCheckCount + 1
+		--if self.manaCheckCount > 8 then
+		--self.manaCheckCount = 0
+		local _,nomana = IsUsableSpell(timer.manaCheck)
+		if nomana then
+			timer.button.icon:SetVertexColor(0.5,0.5,1)
+		else
+			if timer.outofrange then
+				timer.button.icon:SetVertexColor(1,0,0)
+			else
+				timer.button.icon:SetVertexColor(1,1,1)
+			end
+		end
+		--end
+	end
 end
 
 rangeManaFrame:SetScript("OnUpdate", rangeManaUpdate)
@@ -1028,7 +1093,7 @@ end
 XiTimers.TimerEvent = function(self, event, ...)
 	local timer = self.timer
 	if timer.buffIsActive then return end
-    if event == "SPELL_UPDATE_COOLDOWN" or event == "ACTIONBAR_UPDATE_COOLDOWN" then 
+	if event == "SPELL_UPDATE_COOLDOWN" or event == "ACTIONBAR_UPDATE_COOLDOWN" then
 		local start, duration, enable, charges, maxcharges
 		if timer.type == "spell" and timer.hasCharges then
 			charges, maxcharges, start, duration = GetSpellCharges(timer.spellID)
@@ -1044,21 +1109,21 @@ XiTimers.TimerEvent = function(self, event, ...)
 				end
 			else
 				timer:Start(start, start+duration, nil, nil, charges, maxcharges)
-			end	
+			end
 		else
 			local gcdstart, gcdduration = GetSpellCooldown(61304)
-			if timer.type == "spell" then			
+			if timer.type == "spell" then
 				start, duration, enable = GetSpellCooldown(timer.spellID)
 			else
 				start, duration, enable = GetItemCooldown(timer.itemID)
 			end
-			if (timer.running and timer.endTime and timer.endTime <= gcdstart+gcdduration) or 
+			if (timer.running and timer.endTime and timer.endTime <= gcdstart+gcdduration) or
 					(gcdstart == start and gcdduration == duration) then
 				if timer.timer > 0 then
 					timer:Stop()
 				end
 				self.cooldown:SetDrawSwipe(true)
-				self.cooldown:SetCooldown(gcdstart, gcdduration)	
+				self.cooldown:SetCooldown(gcdstart, gcdduration)
 			else
 				if duration == 0 and timer.timer > 0 then
 					self.timer:Stop()
@@ -1071,7 +1136,7 @@ XiTimers.TimerEvent = function(self, event, ...)
 end
 
 
-function mergetable(target, source)
+local function mergetable(target, source)
 	for key, value in next, source, nil do
 		if type(target[key]) == "nil" then
 			if type(value) == "table" then
@@ -1088,7 +1153,7 @@ end
 function XiTimers:LoadConfig()
 	if self.CustomConfig then return end
 	self:Deactivate()
-	
+
 	local role = GetSpecialization()
 	if not profile.buttons then profile.buttons = {} end
 	if not profile.buttons[class] then
@@ -1097,25 +1162,25 @@ function XiTimers:LoadConfig()
 			profile.buttons[class][i] = {}
 		end
 	end
-	
+
 	local config = profile.buttons[class][role][self.nr]
-	if not config then 
+	if not config then
 		self.button:SetNormalTexture("Interface\\Buttons\\UI-Quickslot")
 		self:Deactivate()
 		return
 	end
 	if config.type == "spell" and config.id then
-		local spellID = config.id		
+		local spellID = config.id
 		local data = XiTimers.SpellData[spellID]
 		if data and data.roles and data.roles[role] then
 			data = data.roles[role]
 		end
-		
+
 		if data and data.upgrade and IsPlayerSpell(data.upgrade) then
 			data = XiTimers.SpellData[data.upgrade]
 		elseif not IsPlayerSpell(config.id) or select(7, GetSpellInfo(GetSpellInfo(config.id))) ~= config.id then
 			if data and data.alt then
-				for i=1,#data.alt do 
+				for i=1,#data.alt do
 					if IsPlayerSpell(data.alt[i]) then
 						spellID = data.alt[i]
 						data = XiTimers.SpellData[spellID]
@@ -1128,7 +1193,7 @@ function XiTimers:LoadConfig()
 			end
 			if spellID == config.id then return end
 		end
-		
+
 
 		if data and data.extend and not data.isExtended and XiTimers.SpellData[data.extend] then
 			local extender = XiTimers.SpellData[data.extend]
@@ -1137,7 +1202,7 @@ function XiTimers:LoadConfig()
 			data.isExtended = true
 		end
 
-		
+
 		self.button.icon:SetTexture(GetSpellTexture(spellID))
 		self.button:SetAttribute("type1", "spell")
 		if data and data.button then
@@ -1148,7 +1213,7 @@ function XiTimers:LoadConfig()
 		self.spellID = spellID
 		self.events[1] = "SPELL_UPDATE_COOLDOWN"
 		self.type = "spell"
-		
+
 		local currentCharges, maxCharges = GetSpellCharges(spellID)
 		if maxCharges and maxCharges > 1 then
 			self.hasCharges = true
@@ -1159,8 +1224,8 @@ function XiTimers:LoadConfig()
 			self.hasCharges = false
 		end
 
-		if data then			
-			if data.buff then 
+		if data then
+			if data.buff then
 				self.buff = data.buff
 				buffTimers[data.buff] = self.nr
 				self.noCooldownAfterBuff = data.noCooldownAfterBuff
@@ -1186,7 +1251,7 @@ function XiTimers:LoadConfig()
 		self.item = config.item
 		self.itemID = config.id
 		self.events[1] = "ACTIONBAR_UPDATE_COOLDOWN"
-	end	
+	end
 	self:Activate()
 	self.button:SetScript("OnEvent", XiTimers.TimerEvent)
 	self:SetReverseAlpha(true)
@@ -1247,9 +1312,9 @@ function XiTimers.CreateDefaultBars()
 		frame:SetWidth(100)
 		frame:SetHeight(36)
 		frame:SetPoint("CENTER", nil, "CENTER")
-		libmov.RegisterMovable("XiTimers", frame, getAnchorTable, i)	
+		libmov.RegisterMovable("XiTimers", frame, getAnchorTable, i)
 		baranchors[i] = frame
-		
+
 		bars[i] = {}
 		for j=1,10 do
 			local timer = XiTimers:new()
@@ -1260,24 +1325,24 @@ function XiTimers.CreateDefaultBars()
 				timer.button:ClearAllPoints()
 				timer:SetPoint("LEFT", frame, "LEFT")
 			end
-		end	
+		end
 	end
 end
 
-function XiTimers.LoadProfile()	
+function XiTimers.LoadProfile()
 	wipe(buffTimers)
 	for k,t in pairs(XiTimers.timers) do
 		if t.configurable then t:LoadConfig() end
 	end
 	for k,frame in pairs(baranchors) do
-		frame:SetWidth(XiTimers.timers[1].button:GetWidth()*XiTimers.timers[1].button:GetScale()*10+XiTimers.timers[1].spacing*9*XiTimers.timers[1].button:GetScale())		
+		frame:SetWidth(XiTimers.timers[1].button:GetWidth()*XiTimers.timers[1].button:GetScale()*10+XiTimers.timers[1].spacing*9*XiTimers.timers[1].button:GetScale())
 		frame:SetHeight(XiTimers.timers[1].button:GetHeight()*XiTimers.timers[1].button:GetScale())
 		frame:SetScale(XiTimers.timers[1].button:GetScale())
 	end
---	XiTimers.PositionTimersOnBars(XiTimers.grid)
+	--	XiTimers.PositionTimersOnBars(XiTimers.grid)
 	if XiTimers.grid then XiTimers.ShowGrid() else XiTimers.HideGrid() end
 	libmov.UpdateMovableLayout("XiTimers")
-	
+
 end
 
 function XiTimers.UnlockBars()
@@ -1298,12 +1363,12 @@ function XiTimers.PositionTimersOnBars(unlocking)
 			bars[i][j].button:ClearAllPoints()
 			bars[i][j]:ClearAnchors()
 		end
-		
+
 		if unlocking or bars[i].position == "grid" or not bars[i].position then
 			bars[i][1].button:SetPoint("LEFT", baranchors[i], "LEFT")
 			for j=2,#bars[i] do
 				bars[i][j]:Anchor(bars[i][j-1], "LEFT", "RIGHT")
-			end	
+			end
 		elseif bars[i].position == "left" then
 			lastactive = nil
 			for timer = 1,#bars[i] do
@@ -1323,9 +1388,9 @@ function XiTimers.PositionTimersOnBars(unlocking)
 				end
 			end
 		elseif bars[i].position == "right" then
-				for j = 1,#bars[i] do
-			bars[i][j].button:ClearAllPoints()
-		end
+			for j = 1,#bars[i] do
+				bars[i][j].button:ClearAllPoints()
+			end
 			lastactive = nil
 			for timer = #bars[i],1,-1 do
 				if bars[i][timer].active then
@@ -1348,10 +1413,10 @@ function XiTimers.PositionTimersOnBars(unlocking)
 			local activetimers = {}
 			for j=1,#bars[i] do
 				if bars[i][j].active then
-					table.insert(activetimers, bars[i][j])					
+					table.insert(activetimers, bars[i][j])
 				end
 			end
-			
+
 			if #activetimers % 2 == 0  and #activetimers > 0 then
 				local middletimer = #activetimers / 2
 				activetimers[middletimer]:SetPoint("RIGHT", baranchors[i], "CENTER", true)
@@ -1371,13 +1436,11 @@ function XiTimers.PositionTimersOnBars(unlocking)
 				for j = middletimer+1, #activetimers do
 					activetimers[j]:Anchor(activetimers[j-1], "LEFT", "RIGHT")
 				end
-				
+
 			end
 		end
 	end
 end
 
 XiTimers.CreateDefaultBars()
-
-
 
