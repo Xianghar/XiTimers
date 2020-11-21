@@ -11,6 +11,7 @@ XiTimers.version = 401
 
 XiTimers.timers = {}
 XiTimers.nrOfTimers = 0
+XiTimers.TextureToTimer = {}
 XiTimers.__index = XiTimers
 XiTimers.updateInterval = 0.06
 
@@ -491,6 +492,10 @@ function XiTimers:Activate()
         self.button:Show()
     end
     self.button:SetAttribute("active", true)
+    local texture = self.button.icon:GetTexture()
+    if (texture) then
+        XiTimers.TextureToTimer[texture] = self
+    end
     if self.rangeCheck or self.manaCheck then
         self:AddRangeCheck()
     end
@@ -506,6 +511,8 @@ function XiTimers:Deactivate()
     end
     self.button:Hide()
     self.button:SetAttribute("active", false)
+    local texture = self.button.icon:GetTexture()
+    if (texture) then XiTimers.TextureToTimer[texture] = nil end
     self:RemoveRangeCheck()
     if self.buff and buffTimers[buff] then
         for i = 1, #buffTimers[buff] do
