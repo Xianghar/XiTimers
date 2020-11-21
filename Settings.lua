@@ -195,7 +195,7 @@ SettingsFunctions = {
         function(value, Timers)
             if value then
                 for k,v in pairs(Timers) do
-                    RegisterStateDriver(v.button,"invehicle","[bonusbar:5]hide;show")
+					RegisterStateDriver(v.button,"invehicle","[vehicleui][@vehicle, exists] hide; show")
                 end
             else
                 for k,v in pairs(Timers) do

@@ -2,7 +2,7 @@
 ..\FrameXML\UI.xsd">
 
   <CheckButton name="XiTimersLiteTemplate" clampedToScreen="true" movable="true" enableMouse="true" virtual="true"
-    inherits="ActionButtonTemplate, SecureActionButtonTemplate, SecureHandlerEnterLeaveTemplate, SecureHandlerBaseTemplate, SecureHandlerAttributeTemplate,SecureHandlerDragTemplate,SecureHandlerMouseUpDownTemplate">
+    inherits="ActionButtonTemplate, SecureActionButtonTemplate, SecureHandlerEnterLeaveTemplate, SecureHandlerBaseTemplate, SecureHandlerStateTemplate,SecureHandlerDragTemplate,SecureHandlerMouseUpDownTemplate">
     <Size x="36" y="36"/>
 	<Frames>
       <StatusBar name="$parentBar">
