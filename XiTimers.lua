@@ -122,7 +122,7 @@ function XiTimers.UpdateTimers(self, elapsed)
                         end
                     else
                         timer.reverseAlpha = false
-                        if count and duration == 0 and expiration == 0 then
+                        if count and ((duration == 0 and expiration == 0) or timer.showBuffCounter) then
                             timer:Start(count, count, true, count)
                         else
                             timer:Start(expiration - duration, expiration, true)
@@ -1246,6 +1246,7 @@ function XiTimers:LoadConfig()
         if data then
             if data.buff then
                 self.buff = data.buff
+                self.showBuffCounter = data.showBuffCounter
                 buffTimers[data.buff] = self.nr
                 self.noCooldownAfterBuff = data.noCooldownAfterBuff
             end
