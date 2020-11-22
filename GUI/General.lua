@@ -29,10 +29,25 @@ XiTimers.options = {
 				unlockspells = {
 				    order = 1,
                     type = "execute",
-                    name = L["Unlock Spells"],
+                    name = function()
+                        if XiTimers.grid then
+                            return L["Lock Spells"]
+                        else
+                            return L["Unlock Spells"]
+                        end
+                    end,
                     desc = L["Unlock Spells Desc"],
-                    func = function(info, val) XiTimers.ShowGrid() LibDialog:Spawn("XiTimers_Spells") InterfaceOptionsFrame:Hide() end,			
-                    get = function(info) return XiTimers.ActiveProfile.UnlockSpells end,
+                    func = function(info, val)
+                        if XiTimers.grid then
+                            XiTimers.HideGrid()
+                            LibDialog:Dismiss("XiTimers_Spells")
+                        else
+                            XiTimers.ShowGrid()
+                            LibDialog:Spawn("XiTimers_Spells")
+                            InterfaceOptionsFrame:Hide()
+                            ToggleSpellBook("spell")
+                        end
+                    end,
 				},
                 unlock = {
                     order = 2,

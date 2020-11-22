@@ -488,6 +488,11 @@ function XiTimers:Activate()
     for _, event in pairs(self.events) do
         self.button:RegisterEvent(event)
     end
+    if self.playerEvents then
+        for _, event in pairs(self.playerEvents) do
+            self.button:RegisterUnitEvent(event, "player")
+        end
+    end
     if not self.hideInactive and (not self.HideOOC or InCombatLockdown()) then
         self.button:Show()
     end
@@ -506,9 +511,10 @@ end
 
 function XiTimers:Deactivate()
     self.active = false
-    for _, event in pairs(self.events) do
+    --[[ for _, event in pairs(self.events) do
         self.button:UnregisterEvent(event)
-    end
+    end ]]
+    self.button:UnregisterAllEvents()
     self.button:Hide()
     self.button:SetAttribute("active", false)
     local texture = self.button.icon:GetTexture()
@@ -1112,7 +1118,10 @@ end
 
 XiTimers.TimerEvent = function(self, event, ...)
     local timer = self.timer
+    if self.timer.customOnEvent then self.timer.customOnEvent(self, event, ...) end
+
     if timer.buffIsActive then return end
+
     if event == "SPELL_UPDATE_COOLDOWN" or event == "ACTIONBAR_UPDATE_COOLDOWN" then
         local start, duration, enable, charges, maxcharges
         if timer.type == "spell" and timer.hasCharges then
@@ -1224,14 +1233,34 @@ function XiTimers:LoadConfig()
 
         self.button.icon:SetTexture(GetSpellTexture(spellID))
         self.button:SetAttribute("type1", "spell")
+
         if data and data.button then
             self.button:SetAttribute("spell1", data.button)
         else
             self.button:SetAttribute("spell1", spellID)
         end
         self.spellID = spellID
-        self.events[1] = "SPELL_UPDATE_COOLDOWN"
         self.type = "spell"
+
+        self.events = {"SPELL_UPDATE_COOLDOWN"}
+        self.playerEvents = {}
+        if data and data.events then
+            for k, v in pairs(data.events) do
+                table.insert(self.events, v)
+            end
+        end
+        if data and data.playerEvents then
+            for k, v in pairs(data.playerEvents) do
+                table.insert(self.playerEvents, v)
+            end
+        end
+
+        self.customOnEvent = nil
+        if data then
+            if data.customOnEvent then self.customOnEvent = data.customOnEvent end
+            if data.startEvents then self.startEvents = data.startEvents end
+        end
+
 
         local currentCharges, maxCharges = GetSpellCharges(spellID)
         if maxCharges and maxCharges > 1 then
@@ -1263,6 +1292,7 @@ function XiTimers:LoadConfig()
             self.rangeCheck = nil
         end
 
+
     elseif config.type == "item" and config.id and config.item then
         self.button.icon:SetTexture(GetItemIcon(config.id))
         self.button:SetAttribute("*type*", "item")
@@ -1270,13 +1300,19 @@ function XiTimers:LoadConfig()
         self.type = "item"
         self.item = config.item
         self.itemID = config.id
-        self.events[1] = "ACTIONBAR_UPDATE_COOLDOWN"
+        self.events = {"ACTIONBAR_UPDATE_COOLDOWN"}
     end
+
     self:Activate()
     self.button:SetScript("OnEvent", XiTimers.TimerEvent)
     self:SetReverseAlpha(true)
     self.dontFlash = true
     XiTimers.TimerEvent(self.button, "SPELL_UPDATE_COOLDOWN")
+    if self.startEvents then
+        for _, event in pairs(self.startEvents) do
+            XiTimers.TimerEvent(self.button, event)
+        end
+    end
 end
 
 
