@@ -540,7 +540,7 @@ function XiTimers:Start(startTime, endTime, buff, buffCount, charges, maxcharges
     self.endTime = endTime
     duration = endTime - startTime
     self.duration = duration
-    local timerbar = self.timerBar
+    local timerBar = self.timerBar
     local time = endTime - GetTime()
     if buff and buffCount then
         self.timer = buffCount
@@ -559,11 +559,11 @@ function XiTimers:Start(startTime, endTime, buff, buffCount, charges, maxcharges
         SetButtonTime(self.button.time, self.timer)
     end
 
-    timerbar:SetMinMaxValues(0, duration)
+    timerBar:SetMinMaxValues(0, duration)
     self.running = true
 
     if self.visibleTimerBars and not self.timerOnButton then
-        timerbar:SetValue(self.timer)
+        timerBar:SetValue(self.timer)
     end
     if buff or self.dontAlpha or (charges and charges > 0) then
         self:SetIconAlpha(self.button.icon, self.maxAlpha)
